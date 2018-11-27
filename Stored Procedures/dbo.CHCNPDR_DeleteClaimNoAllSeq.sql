@@ -1,0 +1,38 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+
+
+
+--SK 12/27/2016
+CREATE  PROCEDURE [dbo].[CHCNPDR_DeleteClaimNoAllSeq]
+
+@RequestID VARCHAR(30), 
+@ClaimNo VARCHAR(25)
+
+AS
+
+BEGIN
+
+DELETE FROM CHCNPDR_ClaimMulti 
+WHERE RequestID = @RequestID AND ClaimNo = @ClaimNo 
+
+END
+
+
+
+
+
+
+
+
+
+
+
+GO

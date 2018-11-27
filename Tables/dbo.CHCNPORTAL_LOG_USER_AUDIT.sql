@@ -1,0 +1,11 @@
+CREATE TABLE [dbo].[CHCNPORTAL_LOG_USER_AUDIT]
+(
+[DATE] [datetime] NULL,
+[USERID] [nvarchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[STATUS] [nvarchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CHANGED_BY_ID] [nvarchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TYPE] [nchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[USERNAME] [nchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CHANGED_BY_USERNAME] [nchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO

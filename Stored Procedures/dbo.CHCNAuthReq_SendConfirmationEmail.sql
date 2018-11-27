@@ -1,0 +1,23 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+CREATE PROCEDURE [dbo].[CHCNAuthReq_SendConfirmationEmail]
+
+@REQUESTID varchar(30),
+@MESSAGE VARCHAR(MAX) = ''
+
+As
+
+
+DECLARE @EMAIL VARCHAR(50) = ''	
+DECLARE @SUBJECT VARCHAR(100) = ''				
+
+SELECT @EMAIL = u.EMAIL FROM CHCNAuthReq_Master m INNER JOIN Portal_DNN7.DBO.Users u ON m.UserID = u.UserID WHERE m.RequestID = @REQUESTID
+				 
+SET @SUBJECT='NEW AUTH REQUEST RECEIPT'
+exec [master].[dbo].[CHCNEDI_SendEmail] @to=@EMAIL, @subject=@SUBJECT , @body=@MESSAGE, @body_format='Text'
+		
+RETURN
+GO

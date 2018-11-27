@@ -1,0 +1,140 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+CREATE PROCEDURE [dbo].[CHCNPortal3_GetAuth]
+
+/*
+SPROC TO RETRIEVE AUTH FOR COPYING, EDITING OR MODIFYING
+PASS AUTHNO/REQUEST ID FROM AUTH DASHBOARD
+POPULATE PA AUTH FORM WITH DATA FROM AUTH
+CALL CHCNPORTAL3_GETAUTHDETAILS TO RETURN AUTH DETAILS
+1. COPY AUTH (C) - COPY EXISTING AUTH FROM EZCAP, EXCLUDE DATES, REQUEST TYPE, LOS, 
+2. EDIT AUTH (E) - COPY EXISTING DRAFT FROM PORTAL, PASS REQUEST ID 
+3. MODIFY AUTH (M) - COPY EXSITING AUTH FROM EZCAP
+-- ADDED NPINO  TO C AND M; POPULATE AUTH_PCP FACILITY FIELDS WITH AUTH PCP DATA, CTA, 12/10/2015
+-- UPDATED REFCONTRACT FIELD, CTA, 07/27/2016
+-- UPDATE REFCONTRACT FIELD, REMOVED "WHEN P2.CLASS='SP' THEN 'SP'", CTA, 08/01/2016
+*/
+--Show UDF15 (Newly created on EZCAP) for AUTHPCP_COMPANY instead of rendering provider's vendor ID (SK 9/12/2016)
+
+@AUTHNO VARCHAR(25),
+@TYPE VARCHAR(1) 
+
+AS 
+
+IF @AUTHNO IS NULL OR @TYPE IS NULL 
+	RETURN
+ELSE
+BEGIN
+
+	IF @TYPE = 'C' -- COPY EXISTING AUTH
+		BEGIN
+			SELECT DISTINCT 
+			M.AUTHNO, RequestID = NULL, RequestType = NULL, RetroReqReason= NULL, ServiceStartDate = GETDATE(), ServiceEndDate = DATEADD(D, 90, GETDATE()),
+			-- Requesting Provider Info
+			--M.VENDOR AS AUTHPCP_COMPANY, 
+			U.USERFIELD15 AS AUTHPCP_COMPANY, AUTHPCP_Facility_ProvID = M.AUTHPCP, AUTHPCP_Facility_Prov_KEYID = m.AUTHPCP_KeyID,	ISNULL(U.USERFIELD3,NULL) AS AUTHPCP_OfficeContactName,
+			ISNULL(U.USERFIELD2,NULL) AS  AUTHPCP_OfficeContactPhone, ISNULL(U.USERFIELD1,NULL) AS AUTHPCP_OfficeContactFax, P1.REV_FULLNAME AS AUTHPCP_Name, 
+			M.AUTHPCP AS  AUTHPCP_ProvID, m.AUTHPCP_KeyID, AUTHPCP_UnlistedName = NULL,
+			-- Member Info
+			M.MembID, M.Memb_Keyid,M.MembName, MC.Sex as MembSex,MC.Patid as PATID, M.OPT as Memb_OptName, NewBornDOB = NULL,  
+			-- Authorize to Provider Info
+			M.REQPROV AS RefToProvID, M.Reqprov_keyid AS  RefToProv_KeyID, M.REQSPEC as RefToSpec, P2.REV_FULLNAME AS RefToName, RefToMedGroup = NULL,
+			--P2.CONTRACT AS RefContract, -- replaced with PROVIDER CLASS
+			CASE   WHEN P2.CLASS = 'H' THEN 'H' WHEN P2.CONTRACT IN ('N','T') THEN 'N' ELSE 'Y' END AS RefContract,
+			RefToProvPhone = NULL, RefToProvFax = NULL, UnlistedRefToProvName = NULL, UnlistedRefToProvStreet  = NULL,
+			UnlistedRefToProvCity = NULL, UnlistedRefToProvState  = NULL, UnlistedRefToProvNPI  = NULL,
+			-- Non Contracted Section
+			RefToMembReq = NULL, RefToLanguage  = NULL, RefToLocation  = NULL, RefToContinuity  = NULL, RefToOnlyProv = NULL, RefToOther  = NULL,
+			-- Place of Service
+			S.DESCR AS PlaceSvc_Selected , M.PLACESVC AS PlaceSvc_Code, 
+			-- Facility Info
+			M.FACPROVID as Facility_ProvID , M.SVCFACID_KEYID as Facility_Prov_KeyID, P3.REV_FULLNAME AS FacilityName,	
+			-- Unlisted Facility Info
+			UnlistedFacilityName = NULL, UnlistedFacilityStreet = NULL, UnlistedFacilityCity  = NULL, UnlistedFacilityState  = NULL,
+			UnlistedFacilityPhone  = NULL, UnlistedFacilityFax = NULL, UnlistedFacilityNPI = NULL,
+            -- Comments
+            Notes_UserComment = NULL,
+			P1.NPINO
+			FROM	[EZCAP65TEST].[EZCAPDB].[dbo].[AUTH_MASTERS_V] as M LEFT JOIN 
+			[EZCAP65TEST].[EZCAPDB].[dbo].[MEMB_COMPANY_V] MC ON M.MEMB_KEYID = MC.MEMB_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[AUTH_UDF_V] as U ON M.AUTHNO=U.AUTHNO LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P1 ON M.AUTHPCP_KEYID = P1.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P2 ON M.REQPROV_KEYID = P2.PROV_KEYID LEFT JOIN 
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P3 ON M.SVCFACID_KEYID = P3.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_VENDINFO_V] PV1 ON M.AUTHPCP_KEYID = PV1.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[VEND_MASTERS_V] V1 ON M.VENDOR = V1.VENDORID AND V1.ISDEFAULT = 1 AND V1.CURRHIST = 'C' LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PLACESVC_CODES_V] S ON M.PLACESVC = S.CODE
+			WHERE M.AUTHNO =@AUTHNO
+
+		END		
+		
+	IF @TYPE = 'M' -- MODIFICATION	
+		BEGIN
+			SELECT DISTINCT 
+			M.AUTHNO AS RequestID, M.REQCAT AS RequestType, --M.PSTATUS AS RequestType, 
+			RetroReqReason= NULL, M.AUTHDATE AS ServiceStartDate, M.EXPRDATE AS ServiceEndDate,
+			-- Requesting Provider Info
+			--M.VENDOR AS AUTHPCP_COMPANY, 
+			U.USERFIELD15 AS AUTHPCP_COMPANY, AUTHPCP_Facility_ProvID = M.AUTHPCP, AUTHPCP_Facility_Prov_KEYID = m.AUTHPCP_KeyID,	ISNULL(U.USERFIELD3,NULL) AS AUTHPCP_OfficeContactName,
+			ISNULL(U.USERFIELD2,NULL) AS  AUTHPCP_OfficeContactPhone, ISNULL(U.USERFIELD1,NULL) AS AUTHPCP_OfficeContactFax, P1.REV_FULLNAME AS AUTHPCP_Name, 
+			M.AUTHPCP AS  AUTHPCP_ProvID, m.AUTHPCP_KeyID, AUTHPCP_UnlistedName = NULL,
+			-- Member Info
+			M.MembID, M.Memb_Keyid, M.MembName, MC.Sex as MembSex,MC.Patid as PATID, M.OPT as Memb_OptName, NewBornDOB = NULL,  
+			-- Authorize to Provider Info
+			M.REQPROV AS RefToProvID, M.Reqprov_keyid AS  RefToProv_KeyID, M.REQSPEC as RefToSpec, P2.REV_FULLNAME AS RefToName, RefToMedGroup = NULL,
+			--P2.CONTRACT AS RefContract,  -- replaced with PROVIDER CLASS
+			CASE   WHEN P2.CLASS = 'H' THEN 'H' WHEN P2.CONTRACT IN ('N','T') THEN 'N' ELSE 'Y' END AS RefContract,
+			RefToProvPhone = NULL, RefToProvFax = NULL, UnlistedRefToProvName = NULL, UnlistedRefToProvStreet  = NULL,
+			UnlistedRefToProvCity = NULL, UnlistedRefToProvState  = NULL, UnlistedRefToProvNPI  = NULL,
+			-- Non Contracted Section
+			RefToMembReq = NULL, RefToLanguage  = NULL, RefToLocation  = NULL, RefToContinuity  = NULL, RefToOnlyProv = NULL, RefToOther  = NULL,
+			-- Place of Service
+			S.DESCR AS PlaceSvc_Selected , M.PLACESVC AS PlaceSvc_Code, 
+			-- Facility Info
+			M.FACPROVID as Facility_ProvID , M.SVCFACID_KEYID as Facility_Prov_KeyID, P3.REV_FULLNAME AS FacilityName,	
+			-- Unlisted Facility Info
+			UnlistedFacilityName = NULL, UnlistedFacilityStreet = NULL, UnlistedFacilityCity  = NULL, UnlistedFacilityState  = NULL,
+			UnlistedFacilityPhone  = NULL, UnlistedFacilityFax = NULL, UnlistedFacilityNPI = NULL,
+            -- Comments
+            Notes_UserComment = NULL, P1.NPINO
+			FROM	[EZCAP65TEST].[EZCAPDB].[dbo].[AUTH_MASTERS_V] as M LEFT JOIN 
+			[EZCAP65TEST].[EZCAPDB].[dbo].[MEMB_COMPANY_V] MC ON M.MEMB_KEYID = MC.MEMB_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[AUTH_UDF_V] as U ON M.AUTHNO=U.AUTHNO LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P1 ON M.AUTHPCP_KEYID = P1.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P2 ON M.REQPROV_KEYID = P2.PROV_KEYID LEFT JOIN 
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_COMPANY_V] P3 ON M.SVCFACID_KEYID = P3.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PROV_VENDINFO_V] PV1 ON M.AUTHPCP_KEYID = PV1.PROV_KEYID LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[VEND_MASTERS_V] V1 ON M.VENDOR = V1.VENDORID AND V1.ISDEFAULT = 1 AND V1.CURRHIST = 'C' LEFT JOIN
+			[EZCAP65TEST].[EZCAPDB].[dbo].[PLACESVC_CODES_V] S ON M.PLACESVC = S.CODE
+			WHERE M.AUTHNO =@AUTHNO
+		END		
+		
+	IF @TYPE = 'E'
+		BEGIN
+			-- USE SPROC BELOW TO RETURN ALL DATA ELEMENTS
+			EXEC [dbo].[CHCNAuthReq_DraftRetrieveByRequestID] @REQUESTID = @AUTHNO
+			/*
+			-- OR USE SELECT STATEMENT BELOW TO PRE-POPULATE FIELDS ON PA FORM
+			SELECT M.REQUESTID, REQUEST_TYPE = CASE RequestType WHEN 'U' THEN 'URGENT' WHEN 'R' THEN 'RETRO' ELSE 'ROUTINE' END,ISNULL(M.RequestDate, M.LastModifiedDate) AS REQDATE, 
+			M.AUTHPCP_OfficeContactName AS OFFICE_CONTACT,AUTHPCP_OfficeContactPhone AS CONTACT_PHONE,
+			AUTHPCP_OfficeContactFax AS CONTACT_FAX, M.PLACESVC_CODE AS PLACESVC,M.PlaceSvc_Selected AS POS_DESC, M.MEMBNAME, M.MEMBID,
+			M.PatID, M.Memb_OptName AS OPT, M.ServiceStartDate AS AUTHDATE, M.ServiceEndDate AS EXPRDATE, 
+			M.AUTHPCP_Name AS REQ_PROVNAME, M.RefToName AS AUTHORIZE_TO, M.REFTOSPEC AS SPECCODE, M.RefToSpecialty AS SPECIALTY 
+			FROM CHCNAuthReq_Master M LEFT JOIN [EZCAP65TEST].[EZCAPDB].[DBO].[MEMB_COMPANY_V] MC ON M.Memb_Keyid = MC.MEMB_KEYID
+			WHERE RequestID = @AUTHNO AND DraftMode = 1 AND M.Memb_Keyid IS NOT NULL 
+			*/
+		END
+END
+
+
+
+
+
+
+
+GO

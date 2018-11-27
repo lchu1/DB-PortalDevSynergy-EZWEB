@@ -1,0 +1,36 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+CREATE PROCEDURE [dbo].[CHCNPDR_DeleteAttachmentTemp]
+
+@ID INT
+
+AS
+
+
+SET @ID = LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(@ID,CHAR(9),''),CHAR(10),''),CHAR(13),'')))
+
+DELETE 
+FROM CHCNPDR_Attachments_Temp
+WHERE ID = @ID
+
+IF (SELECT COUNT(*) FROM CHCNPDR_Attachments_Temp WHERE ID=@ID) = 0
+    BEGIN
+    RETURN 1
+    END
+ELSE
+    BEGIN
+    RETURN -1
+    END
+
+
+
+
+
+GO

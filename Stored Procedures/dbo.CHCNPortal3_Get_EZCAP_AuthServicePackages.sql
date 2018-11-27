@@ -1,0 +1,31 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+-- =============================================
+-- SK.5/25/2016
+-- Get all list of bundles from EZCAP
+-- =============================================
+CREATE PROCEDURE [dbo].[CHCNPortal3_Get_EZCAP_AuthServicePackages]	
+	
+AS
+BEGIN
+	
+	SET NOCOUNT ON;	
+	
+	SELECT DISTINCT agv.ASPGROUPID, agv.GROUP_DESCR, atv.FROM_DATE, atv.TO_DATE, atv.AUTH_SVCCODE, scv.PROCDESC, CAST(atv.QTY AS INT) AS QTY, ISNULL(atv.MODIF,'') AS MODIF, scv.COMMON_ID
+	FROM [EZCAP65TEST].[EZCAPDB].[dbo].[ASP_GROUPS_V] agv INNER JOIN [EZCAP65TEST].[EZCAPDB].[dbo].[ASP_TABLES_V] atv ON agv.ASPGROUPID = atv.ASPGROUPID
+		LEFT JOIN [EZWEB].[DBO].[CHCNAUTHREQ_CPT] scv WITH (NOLOCK) ON LTRIM(RTRIM(atv.AUTH_SVCCODE)) = LTRIM(RTRIM(scv.PROCCODE))	
+	WHERE scv.PHCODE = 'P' 
+	ORDER BY agv.ASPGROUPID, atv.AUTH_SVCCODE
+
+END
+
+
+
+
+GO

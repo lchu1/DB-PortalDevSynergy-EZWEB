@@ -1,0 +1,7 @@
+CREATE TABLE [dbo].[CHCNWEB_SPECIALISTS_V_bak]
+(
+[ID] [int] NULL,
+[PROVID] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CITY] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO

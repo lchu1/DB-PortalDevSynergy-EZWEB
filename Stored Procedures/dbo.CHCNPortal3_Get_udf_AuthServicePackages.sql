@@ -1,0 +1,37 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+-- =============================================
+-- SK.5/25/2016
+-- Get the list of bundles from TaxID
+-- =============================================
+CREATE PROCEDURE [dbo].[CHCNPortal3_Get_udf_AuthServicePackages]
+	
+	@CompanyID VARCHAR(20)	
+	
+AS
+BEGIN
+	
+	SET NOCOUNT ON;
+
+	IF @CompanyID IS NULL 
+		RETURN
+	ELSE
+		BEGIN
+			SELECT uag.ASPGROUPID, uag.COMPANY_ID, uag.GROUP_DESCR, uat.AUTH_SVCCODE, scv.PROCDESC, CAST(uat.QTY AS INT) AS QTY, uat.MODIF, scv.COMMON_ID
+			FROM CHCNPORTAL3_UDF_ASP_GROUPS uag
+				INNER JOIN CHCNPORTAL3_UDF_ASP_TABLES uat ON uag.ASPGROUPID = uat.ASPGROUPID
+				LEFT JOIN [EZWEB].[DBO].[CHCNAUTHREQ_CPT] scv WITH (NOLOCK) ON LTRIM(RTRIM(uat.AUTH_SVCCODE)) = LTRIM(RTRIM(scv.PROCCODE))
+			WHERE uag.COMPANY_ID = @CompanyID AND scv.PHCODE = 'P' AND uat.TO_DATE IS NULL
+			ORDER BY uag.ASPGROUPID, uat.AUTH_SVCCODE
+		END
+    
+END
+
+
+
+GO

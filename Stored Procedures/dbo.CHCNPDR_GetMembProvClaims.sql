@@ -1,0 +1,43 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+-- =============================================
+-- SK 12/16/2016
+-- Description: To list only Claims with same member and provider of 
+--	the previously selected claim in New Dispute module
+-- =============================================
+CREATE PROCEDURE [dbo].[CHCNPDR_GetMembProvClaims]
+	@COMPANYIDLIST VARCHAR(150),
+	@PROVID VARCHAR(25),
+	@MEMBID VARCHAR(25)
+AS
+
+BEGIN
+	SET NOCOUNT ON;
+	DECLARE @SQL VARCHAR(MAX)
+	SET @COMPANYIDLIST = REPLACE(@COMPANYIDLIST,'-','') 
+
+	SET @SQL = 'SELECT  VENDOR, COMPANY_ID, LASTNM, FIRSTNM, PROVCLAIM, PROVID, PATID, MEMBID, BIRTH, STATUS, CLAIMNO, DATERECD, DATEFROM, DATETO, BILLED, PROVNAME, MEMBNAME, AUTHNO, NET'
+				+ ' FROM [EZCAP65TEST].[EZCAPDB].[dbo].[CHCNPortal_ClaimMaster_VS] '		
+										
+	IF @COMPANYIDLIST LIKE '%ALAMEDA%' 
+		SET @SQL = @SQL + 'WHERE OPT LIKE ''AA%'' '
+	ELSE IF @COMPANYIDLIST LIKE '%ANTHEM%' 
+		SET @SQL = @SQL + 'WHERE OPT LIKE ''BC%'' '
+	ELSE
+		SET @SQL = @SQL + 'WHERE ((CHARINDEX(REPLACE(VENDOR,''-'',''''), '''+@COMPANYIDLIST+''')>0) OR (CHARINDEX(REPLACE(COMPANY_ID,''-'',''''), '''+@COMPANYIDLIST+''')>0) OR ('''+@COMPANYIDLIST+''' IS NULL)) '
+
+	SET @SQL = @SQL + 'AND MEMBID = '''+@MEMBID+''' AND PROVID = '''+@PROVID+''' AND STATUS = ''PAID'' ORDER BY LASTNM ASC, FIRSTNM ASC, BIRTH ASC, DATEFROM '
+	PRINT @sql
+	EXEC (@SQL)
+END
+
+
+
+
+GO

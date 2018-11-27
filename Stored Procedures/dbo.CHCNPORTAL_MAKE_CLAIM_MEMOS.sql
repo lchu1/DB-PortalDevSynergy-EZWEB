@@ -1,0 +1,47 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+create PROCEDURE [dbo].[CHCNPORTAL_MAKE_CLAIM_MEMOS]
+
+AS
+
+	
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[CHCNPORTAL_CLAIM_MEMOS]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+DROP TABLE [dbo].[CHCNPORTAL_CLAIM_MEMOS]
+
+SELECT CLAIMNO, Memoline1,Memoline2,Memoline3,Memoline4
+INTO DBO.CHCNPORTAL_CLAIM_MEMOS
+FROM     EZCAP65TEST.EZCAPDB.dbo.CLAIM_MEMOFLDS WITH(NOLOCK)
+
+	
+CREATE INDEX CLAIMNO on CHCNPORTAL_CLAIM_MEMOS(CLAIMNO)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO

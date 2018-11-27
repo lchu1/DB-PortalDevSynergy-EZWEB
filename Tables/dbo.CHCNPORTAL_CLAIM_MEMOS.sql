@@ -1,0 +1,11 @@
+CREATE TABLE [dbo].[CHCNPORTAL_CLAIM_MEMOS]
+(
+[CLAIMNO] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[Memoline1] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Memoline2] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Memoline3] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Memoline4] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX [CLAIMNO] ON [dbo].[CHCNPORTAL_CLAIM_MEMOS] ([CLAIMNO]) ON [PRIMARY]
+GO

@@ -1,0 +1,43 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+
+
+
+
+create  function [dbo].[GetProviderID]( @ID int)
+
+RETURNS VARCHAR(20)
+AS
+BEGIN
+
+DECLARE
+
+@PROVID varchar(20)
+
+SELECT @PROVID = PROVID
+FROM CHCNWEB_SPECIALISTS
+WHERE ID = @ID
+
+RETURN @PROVID
+
+END
+
+
+
+
+
+
+
+
+
+
+
+
+GO

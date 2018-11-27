@@ -1,0 +1,31 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+
+--SK.12/20/2016
+
+CREATE PROCEDURE [dbo].[CHCNPDR_GetClaimNo]
+
+@RequestID  VARCHAR(30)
+
+AS
+
+SELECT ClaimNo, Sequence
+FROM  CHCNPDR_ClaimMulti
+WHERE RequestID=@RequestID
+
+
+
+
+
+
+
+
+
+GO

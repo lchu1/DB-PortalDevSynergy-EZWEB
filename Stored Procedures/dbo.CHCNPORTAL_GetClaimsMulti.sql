@@ -1,0 +1,172 @@
+SET QUOTED_IDENTIFIER OFF
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+
+
+
+
+CREATE PROCEDURE [dbo].[CHCNPORTAL_GetClaimsMulti]
+-- 10/08/2012, INCREASED PATID FIELD TO 12 CHARACTERS TO ACCOMMODATE ANTHEM ALPHA CODE, CTA
+-- UPDATED TO USE ECD.COB_MEMB_DETAILS TO SEARCH FRO MULTIPLE PATIDS, CTA, 01/07/2014
+-- UPDATED [EZCAPDB].[dbo].[CHCNPORTAL_CLAIMMASTER_VS] VIEW, CTA, 01/07/2014
+-- UPDATED TO USE CHCNPortal_CLAIM_MASTER TABLE, 01/22/2014, CTA
+-- Updated So it won't run SELECT on empty PARAMS, improve performance by TOP to 101 entries 3/4/2014, LC
+-- Added filtering for Alameda Allaince and Anthem, CTA, 06/23/2016
+-- Changed to the dynamic query to improve the performance and simplied the code SK.8/10/2016
+-- Added PATID comparison for Healthplan ID SK.10/13/2016
+
+
+@COMPANYIDLIST VARCHAR(150),
+@LASTNM VARCHAR(20),
+@FIRSTNM VARCHAR(10),
+@DOB DATETIME,
+@PATID VARCHAR(12),
+@PATACCTNO VARCHAR(25),
+@MEMBID VARCHAR(11),
+@CLAIMNO VARCHAR(25),
+@PROVLN VARCHAR(20), 
+@FromDOS DATETIME,
+@ToDOS DATETIME,
+@VendorID VARCHAR(25),
+@STATUS VARCHAR(10) = NULL --Optional parameter Added for PDR module - SK.12/16/2016
+AS
+
+IF @LASTNM IS NULL AND @FIRSTNM IS NULL AND @DOB IS NULL AND @PATID IS NULL AND @PATACCTNO IS NULL AND @MEMBID IS NULL
+	AND @CLAIMNO IS NULL AND @PROVLN IS NULL AND @FromDOS IS NULL AND @ToDOS IS NULL AND @VendorID IS NULL  
+	BEGIN
+	RETURN
+	END
+ELSE
+	BEGIN
+		DECLARE @SQL VARCHAR(MAX)
+		SET @COMPANYIDLIST = REPLACE(@COMPANYIDLIST,'-','') 
+
+		SET @SQL = 'SELECT  VENDOR, COMPANY_ID, LASTNM, FIRSTNM, PROVCLAIM, PROVID, PATID, MEMBID, BIRTH, STATUS, CLAIMNO, DATERECD, DATEFROM, DATETO, BILLED, PROVNAME, MEMBNAME, AUTHNO, NET'
+				+ ' FROM [EZCAP65TEST].[EZCAPDB].[dbo].[CHCNPortal_ClaimMaster_VS] '		
+										
+		IF @COMPANYIDLIST LIKE '%ALAMEDA%' 
+			SET @SQL = @SQL + 'WHERE OPT LIKE ''AA%'' '
+		ELSE IF @COMPANYIDLIST LIKE '%ANTHEM%' 
+			SET @SQL = @SQL + 'WHERE OPT LIKE ''BC%'' '
+		ELSE
+			SET @SQL = @SQL + 'WHERE ((CHARINDEX(REPLACE(VENDOR,''-'',''''), '''+@COMPANYIDLIST+''')>0) OR (CHARINDEX(REPLACE(COMPANY_ID,''-'',''''), '''+@COMPANYIDLIST+''')>0) OR ('''+@COMPANYIDLIST+''' IS NULL)) '
+		
+		IF @LASTNM IS NOT NULL
+			SET @SQL = @SQL + 'AND ((LASTNM = '''+@LASTNM+''') or (LASTNM LIKE '''+@LASTNM+''' + ''%'')) '
+		IF @FIRSTNM IS NOT NULL
+			SET @SQL = @SQL + 'AND ((FIRSTNM = '''+@FIRSTNM+''') or (FIRSTNM LIKE '''+@FIRSTNM+''' + ''%'')) '
+		IF @Patid IS NOT NULL
+			SET @SQL = @SQL + 'AND (((AAH_ID = '''+@Patid+''') or (AAH_ID  LIKE ''%''+'''+@Patid+''' + ''%'')) OR '
+							+ '((AAHS_ID = '''+@Patid+''') or (AAHS_ID  LIKE ''%''+'''+@Patid+''' + ''%'')) OR '
+							+ '((AACC_ID = '''+@Patid+''') or (AACC_ID  LIKE ''%''+'''+@Patid+''' + ''%'')) OR '
+							+ '((ANTHEM_ID = '''+@Patid+''') or (ANTHEM_ID  LIKE ''%''+'''+@Patid+''' + ''%'')) OR '
+							+ '((HN_ID = '''+@Patid+''') or (HN_ID  LIKE ''%''+'''+@Patid+''' + ''%'')) OR '
+							+ '((PATID = '''+@Patid+''') or (PATID  LIKE ''%''+'''+@Patid+''' + ''%''))) '						
+		IF @PATACCTNO IS NOT NULL
+			SET @SQL = @SQL + 'AND ((PROVCLAIM = '''+@PATACCTNO+''') or (PROVCLAIM LIKE '''+@PATACCTNO+''' + ''%'')) '
+		IF @MEMBID IS NOT NULL
+			SET @SQL = @SQL + 'AND ((MEMBID = '''+@MEMBID+''') or (MEMBID LIKE '''+@MEMBID+''' + ''%'')) '
+		IF @DOB IS NOT NULL
+			SET @SQL = @SQL + 'AND (CONVERT(VARCHAR(10),BIRTH,101) = '''+CONVERT(VARCHAR(10),@DOB,101)+''') '
+		IF @CLAIMNO IS NOT NULL
+			SET @SQL = @SQL + 'AND ((CLAIMNO = '''+@CLAIMNO+''') or (CLAIMNO like '''+@CLAIMNO+''' + ''%'')) '
+		IF @PROVLN IS NOT NULL
+			SET @SQL = @SQL + 'AND ((PROVNAME = '''+@PROVLN+''') or (PROVNAME LIKE '''+@PROVLN+''' + ''%'')) '
+		IF @FromDOS IS NOT NULL
+			SET @SQL = @SQL + 'AND (CONVERT(VARCHAR(10),DATEFROM,101) = '''+CONVERT(VARCHAR(10),@FromDOS,101)+''') '
+		IF @ToDOS IS NOT NULL
+			SET @SQL = @SQL + 'AND (CONVERT(VARCHAR(10),DATETO,101) = '''+CONVERT(VARCHAR(10),@ToDOS,101)+''') '
+		IF @VENDORID IS NOT NULL
+			SET @SQL = @SQL + 'AND (REPLACE(VENDOR,''-'','') = REPLACE('''+@VENDORID+''',''-'','')) '
+		IF @STATUS IS NOT NULL AND @STATUS = '9'
+			SET @SQL = @SQL + 'AND STATUS = ''PAID'''
+		
+		SET @SQL = @SQL + 'ORDER BY LASTNM ASC, FIRSTNM ASC, BIRTH ASC, DATEFROM '
+		PRINT @sql
+		EXEC (@SQL)
+
+/*
+		IF @COMPANYIDLIST LIKE '%ALAMEDA%' 
+			BEGIN
+				SELECT  TOP 101 VENDOR, COMPANY_ID, LASTNM, FIRSTNM, PROVCLAIM, PROVID, PATID, MEMBID, BIRTH, STATUS, CLAIMNO, DATERECD, DATEFROM, DATETO, BILLED, PROVNAME, MEMBNAME
+				FROM [dbo].[CHCNPortal_CLAIM_MASTER]
+				WHERE     (OPT LIKE 'AA%') AND 
+					  ((LASTNM = @LASTNM) or (LASTNM LIKE @LASTNM + '%') or (@LASTNM IS NULL)) and	
+					((FIRSTNM = @FIRSTNM) or (FIRSTNM LIKE @FIRSTNM + '%') or (@FIRSTNM IS NULL)) and	
+					(((AAH_ID = @Patid) or (AAH_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AAHS_ID = @Patid) or (AAHS_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AACC_ID = @Patid) or (AACC_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((ANTHEM_ID = @Patid) or (ANTHEM_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((HN_ID = @Patid) or (HN_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL))) and
+					((PROVCLAIM = @PATACCTNO) or (PROVCLAIM LIKE @PATACCTNO + '%') or (@PATACCTNO IS NULL)) and
+					((MEMBID = @MEMBID) or (MEMBID LIKE @MEMBID + '%') or (@MEMBID IS NULL)) and
+					((BIRTH = @DOB) or (@DOB IS NULL)) AND
+					((CLAIMNO = @CLAIMNO) or (CLAIMNO like @CLAIMNO + '%') or (@CLAIMNO IS NULL)) AND
+				((PROVNAME = @PROVLN) or (PROVNAME LIKE @PROVLN + '%') or (@PROVLN IS NULL)) and
+					((DATEFROM >= @FROMDOS) or (@FROMDOS IS NULL)) and
+					((DATETO <= @TODOS) or (@TODOS IS NULL)) AND
+					((REPLACE(VENDOR,'-','') = REPLACE(@VENDORID,'-','')) or (@VENDORID IS NULL)) 
+				ORDER BY LASTNM ASC, FIRSTNM ASC, BIRTH ASC, DATEFROM 
+			END
+		ELSE IF @COMPANYIDLIST LIKE '%ANTHEM%'
+			BEGIN
+				SELECT  TOP 101 VENDOR, COMPANY_ID, LASTNM, FIRSTNM, PROVCLAIM, PROVID, PATID, MEMBID, BIRTH, STATUS, CLAIMNO, DATERECD, DATEFROM, DATETO, BILLED, PROVNAME, MEMBNAME
+				FROM [dbo].[CHCNPortal_CLAIM_MASTER]
+				WHERE     (OPT LIKE 'BC%') AND 
+					  ((LASTNM = @LASTNM) or (LASTNM LIKE @LASTNM + '%') or (@LASTNM IS NULL)) and	
+					((FIRSTNM = @FIRSTNM) or (FIRSTNM LIKE @FIRSTNM + '%') or (@FIRSTNM IS NULL)) and	
+					(((AAH_ID = @Patid) or (AAH_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AAHS_ID = @Patid) or (AAHS_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AACC_ID = @Patid) or (AACC_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((ANTHEM_ID = @Patid) or (ANTHEM_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((HN_ID = @Patid) or (HN_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL))) and
+					((PROVCLAIM = @PATACCTNO) or (PROVCLAIM LIKE @PATACCTNO + '%') or (@PATACCTNO IS NULL)) and
+					((MEMBID = @MEMBID) or (MEMBID LIKE @MEMBID + '%') or (@MEMBID IS NULL)) and
+					((BIRTH = @DOB) or (@DOB IS NULL)) AND
+					((CLAIMNO = @CLAIMNO) or (CLAIMNO like @CLAIMNO + '%') or (@CLAIMNO IS NULL)) AND
+				((PROVNAME = @PROVLN) or (PROVNAME LIKE @PROVLN + '%') or (@PROVLN IS NULL)) and
+					((DATEFROM >= @FROMDOS) or (@FROMDOS IS NULL)) and
+					((DATETO <= @TODOS) or (@TODOS IS NULL)) AND
+					((REPLACE(VENDOR,'-','') = REPLACE(@VENDORID,'-','')) or (@VENDORID IS NULL)) 
+				ORDER BY LASTNM ASC, FIRSTNM ASC, BIRTH ASC, DATEFROM 
+			END
+
+		ELSE
+			BEGIN
+				SELECT  TOP 101 VENDOR, COMPANY_ID, LASTNM, FIRSTNM, PROVCLAIM, PROVID, PATID, MEMBID, BIRTH, STATUS, CLAIMNO, DATERECD, DATEFROM, DATETO, BILLED, PROVNAME, MEMBNAME
+				FROM [dbo].[CHCNPortal_CLAIM_MASTER]
+				WHERE     ((CHARINDEX(REPLACE(VENDOR,'-',''), REPLACE(@COMPANYIDLIST,'-',''))>0) OR (CHARINDEX(COMPANY_ID,  @COMPANYIDLIST)>0) OR (@COMPANYIDLIST IS NULL)) AND 
+					  ((LASTNM = @LASTNM) or (LASTNM LIKE @LASTNM + '%') or (@LASTNM IS NULL)) and	
+					((FIRSTNM = @FIRSTNM) or (FIRSTNM LIKE @FIRSTNM + '%') or (@FIRSTNM IS NULL)) and	
+					(((AAH_ID = @Patid) or (AAH_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AAHS_ID = @Patid) or (AAHS_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((AACC_ID = @Patid) or (AACC_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((ANTHEM_ID = @Patid) or (ANTHEM_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL)) OR
+					((HN_ID = @Patid) or (HN_ID  LIKE '%'+@Patid + '%') or (@PATID IS NULL))) and
+					((PROVCLAIM = @PATACCTNO) or (PROVCLAIM LIKE @PATACCTNO + '%') or (@PATACCTNO IS NULL)) and
+					((MEMBID = @MEMBID) or (MEMBID LIKE @MEMBID + '%') or (@MEMBID IS NULL)) and
+					((BIRTH = @DOB) or (@DOB IS NULL)) AND
+					((CLAIMNO = @CLAIMNO) or (CLAIMNO like @CLAIMNO + '%') or (@CLAIMNO IS NULL)) AND
+				((PROVNAME = @PROVLN) or (PROVNAME LIKE @PROVLN + '%') or (@PROVLN IS NULL)) and
+					((DATEFROM >= @FROMDOS) or (@FROMDOS IS NULL)) and
+					((DATETO <= @TODOS) or (@TODOS IS NULL)) AND
+					((REPLACE(VENDOR,'-','') = REPLACE(@VENDORID,'-','')) or (@VENDORID IS NULL)) 
+				ORDER BY LASTNM ASC, FIRSTNM ASC, BIRTH ASC, DATEFROM 
+			END
+*/			
+
+END
+
+
+
+
+
+
+
+GO

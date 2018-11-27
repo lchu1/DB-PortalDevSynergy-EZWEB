@@ -1,0 +1,47 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+-- 08/30/2012 CTA, updated for 6 digit check numbers
+-- Added code to strip out hyphens from COMPANYID comparison SK.5/17/2016
+
+CREATE             PROCEDURE [dbo].[CHCNWEB_GetEOBSummaryDt]
+
+
+@COMPANYID varchar(25),
+@PAYDT datetime
+
+AS
+
+SET @COMPANYID = REPLACE(@COMPANYID,'-','') 
+
+SELECT     VENDORNM AS VENDOR, VENDORID AS TAXID, SUM(NET) AS TOTALNET, 
+                      SUM(BILLED) AS TOTALBILLED, SUM(INTEREST) AS TOTALINTEREST, CHECKNO, 
+                      DATEPAID
+FROM     CHCNWEB_EOB
+WHERE     (REPLACE(VENDORID,'-','') = @COMPANYID) AND (DATEPAID = @PAYDT)
+GROUP BY VENDORID, VENDORNM, CHECKNO, DATEPAID
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO

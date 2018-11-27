@@ -1,0 +1,78 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+CREATE   PROCEDURE [dbo].[CHCNWEB_MAKE_SPECIALISTS_6X]
+
+AS
+
+
+--Use this code to create CHCNWEB_SPECIALISTS new table and populate, otherwise truncate and fill
+--Pulls from EZCAP65TEST production database using Linked Server connection
+--Edited to pull from EZCAP65TEST server, 11/01/2009, CTA
+-- Modified MedicalGroup fielkd from 40 to 75, CTA, 04/30/2014
+--Added columns like PANEL_INFO, AREA_OF_FOCUS SK.1/10/2017
+--Added column NPINO PRIOR-1108 (4.2.0 realease) SK.08/16/2017 
+	
+if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[CHCNWEB_SPECIALISTS]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+DROP TABLE [dbo].[CHCNWEB_SPECIALISTS]
+
+CREATE TABLE CHCNWEB_SPECIALISTS (ID INT IDENTITY(1,1),FULLNAME VARCHAR(80), LASTNAME VARCHAR(40),FIRSTNAME VARCHAR(25),
+		PROVID VARCHAR(20), STREET VARCHAR(40), CITY VARCHAR(30), ZIP VARCHAR(10), PHONE VARCHAR(12),
+		FAX VARCHAR(12), HOSPITAL VARCHAR(40), DESCR VARCHAR(30), CODE VARCHAR(3), 
+                MEMOLINE3 VARCHAR(82), LANGUAGE VARCHAR(30), MEDICAL_GROUP VARCHAR(75), PANEL_INFO VARCHAR(210), AREA_OF_FOCUS VARCHAR(100), NPINO VARCHAR(25), RESTRICTIONS VARCHAR(100))
+
+	
+-------------------------------------------------------------------------------
+-- Remark code below if table does not exist and use above code. Remark Create Index lines.
+-- if exists (select * from dbo.sysobjects where id = object_id(N'[dbo].[CHCNWEB_SPECIALISTS]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+-- TRUNCATE TABLE CHCNWEB_SPECIALISTS
+			
+--------------------------------------------------------------------------------
+
+
+INSERT INTO CHCNWEB_SPECIALISTS
+SELECT LEFT(FULLNAME,80), LASTNAME,LEFT(FIRSTNAME,25),LEFT(PROVID,20), LEFT(STREET,40), LEFT(CITY,30), LEFT(ZIP, 10), PHONE,
+		FAX, HOSPITAL, LEFT(DESCR, 30), LEFT(CODE,3), MEMOLINE3, LEFT([LANGUAGE],30), MEDICAL_GROUP, NULLIF(PANEL_INFO,'') AS PANEL_INFO,
+		AREA_OF_FOCUS, NPINO, RESTRICTIONS
+FROM [EZCAP65TEST].[EZCAPDB].[dbo].[CHCNWEB_SPECIALISTS_RVS]
+
+
+CREATE INDEX WEB_ID ON CHCNWEB_SPECIALISTS(ID)
+CREATE INDEX WEB_LN ON CHCNWEB_SPECIALISTS(LASTNAME)
+CREATE INDEX WEB_PROVID ON CHCNWEB_SPECIALISTS(PROVID)
+CREATE INDEX WEB_CODE ON CHCNWEB_SPECIALISTS(CODE)
+CREATE INDEX WEB_CITY ON CHCNWEB_SPECIALISTS(CITY)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GO

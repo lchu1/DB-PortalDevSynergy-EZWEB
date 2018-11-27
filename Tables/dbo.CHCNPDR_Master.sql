@@ -1,0 +1,41 @@
+CREATE TABLE [dbo].[CHCNPDR_Master]
+(
+[RequestID] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+[UserID] [int] NOT NULL,
+[ManagerID] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ClaimNo] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_ProcCode] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_DateFrom] [datetime] NULL,
+[Claim_DateTo] [datetime] NULL,
+[Claim_MembName] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_OPT] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_VendorNM] [varchar] (75) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_Prov] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Claim_Billed] [decimal] (15, 2) NULL,
+[MembID] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Memb_KeyID] [uniqueidentifier] NULL,
+[Memb_LName] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Memb_FName] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ServiceDate] [datetime] NULL,
+[Rend_ProvID] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Rend_Prov_KeyID] [uniqueidentifier] NULL,
+[SpecialtyType] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_Company] [varchar] (200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_ProvName] [varchar] (200) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_Phone] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_Street] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_City] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_State] [varchar] (80) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[Submitter_Zip] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DisputeType] [varchar] (100) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DisputeReason] [varchar] (max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EZCAP_CaseNo] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EZCAP_PostDt] [datetime] NULL,
+[EnterDate] [datetime] NULL,
+[LastChangeBy] [int] NULL,
+[LastChangeDate] [datetime] NULL,
+[DraftMode] [bit] NULL CONSTRAINT [DF_CHCNPDR_Master_DraftMode] DEFAULT ((1))
+) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[CHCNPDR_Master] ADD CONSTRAINT [PK_CHCNPDR_Master] PRIMARY KEY CLUSTERED  ([RequestID]) ON [PRIMARY]
+GO

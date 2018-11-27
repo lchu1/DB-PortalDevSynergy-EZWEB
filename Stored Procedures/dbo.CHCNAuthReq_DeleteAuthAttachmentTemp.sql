@@ -1,0 +1,28 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+CREATE PROCEDURE [dbo].[CHCNAuthReq_DeleteAuthAttachmentTemp]
+
+@ID VARCHAR(20)
+
+AS
+
+
+SET @ID = LTRIM(RTRIM(REPLACE(REPLACE(REPLACE(@ID,CHAR(9),''),CHAR(10),''),CHAR(13),'')))
+
+DELETE 
+FROM CHCNAuthReq_Attachments_Temp
+WHERE ID = @ID
+
+IF (SELECT count(*) FROM CHCNAuthReq_ICD_Temp WHERE ID=@ID) = 0
+    BEGIN
+    RETURN 1
+    END
+ELSE
+    BEGIN
+    RETURN -1
+    END
+
+GO

@@ -1,0 +1,30 @@
+CREATE TABLE [dbo].[CHC_HNELIG_Test]
+(
+[CHC] [char] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[COMPANY] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[EFFDATE] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[TERMDATE] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[PATID] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[PLAN] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[SUBSSN] [varchar] (9) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[LASTNM] [varchar] (35) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[FIRSTNM] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[STREET] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CITY] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[ZIP] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[DOB] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[SEX] [varchar] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[PHONE] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[LANGUAGE] [varchar] (8) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[MCAL10] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[OTHERID2] [varchar] (15) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[SITE] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[MEMBID] [varchar] (20) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[HIC] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[MCARE_A] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[MCARE_B] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CCS] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[CCSDT] [varchar] (10) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+[COB] [varchar] (30) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY]
+GO

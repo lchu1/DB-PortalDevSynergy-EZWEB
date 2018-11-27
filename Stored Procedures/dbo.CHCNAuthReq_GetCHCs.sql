@@ -1,0 +1,55 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+
+-- ADDED NPINO FIELD, CTA, 12/07/2015
+-- Added code to strip out hyphens from VENDORID comparison SK.5/17/2016
+
+CREATE   PROCEDURE [dbo].[CHCNAuthReq_GetCHCs]
+
+@COMPANYID varchar(20),
+@UserID int
+
+as
+
+SET @COMPANYID = REPLACE(@COMPANYID,'-','') 
+
+If Replace(@COMPANYID,'-','') in ('942232394','942235908','941744108','942502308','237135928','237255435','237118361','941667294')
+	Begin
+    SELECT ' -Select a Clinic or Office-' as NAME, '' as VENDORID, NULL AS PROVID, NULL AS PROV_KEYID, NULL AS NPINO
+    UNION
+	SELECT DISTINCT Ltrim(RTrim(NAME)), VENDORID, C.CHC AS PROVID, R.PROV_KEYID, C.NPI
+	FROM [EZCAP65TEST].[EZCAPDB].[dbo].[CHCNEDI_CHC_SITES] C 
+	JOIN  [EZCAP65TEST].[EZCAPDB].DBO.CHCNPORTAL_REQPROVS_VS R ON C.CHC = R.PROVID
+	WHERE REPLACE(REPLACE(VENDORID,',',''),'-','') = @CompanyID  
+	ORDER BY NAME ASC
+	-- select * from [EZWEB].[dbo].[CHCNWEB_CHCN_CLINICS] C 
+	End
+	
+Else
+
+	-- select vendor name and id from non CHC 	
+	Begin
+	SELECT '-Select a Clinic or Office-' as NAME, '' as VENDORID, NULL AS PROVID, NULL AS PROV_KEYID, NULL AS NPINO
+    UNION
+	Select DISTINCT VENDORNM + ' - ' + LASTNAME AS NAME, VENDOR, PROVID, PROV_KEYID, NPINO
+	FROM [EZCAP65TEST].[EZCAPDB].[dbo].[CHCNPORTAL_REQPROVS_VS]
+	WHERE (FIRSTNAME IS NULL or FIRSTNAME = '') 
+		--AND REPLACE( VENDOR,',','') IN (SELECT PropertyValue
+		AND REPLACE(REPLACE( VENDOR,',',''),'-','') IN (SELECT REPLACE(PropertyValue,'-','')
+	FROM [PORTAL_DNN7].[dbo].[ProfilePropertyDefinition] PPD, [PORTAL_DNN7].[dbo].[UserProfile] UP
+	WHERE PPD.PropertyDefinitionID=UP.PropertyDefinitionID and PPD.propertycategory in ('companyid') and UserID=@UserID)
+END
+	
+
+
+
+
+
+
+GO

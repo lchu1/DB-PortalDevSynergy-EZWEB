@@ -1,0 +1,20 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+
+
+
+
+CREATE PROCEDURE [dbo].[CHCNPDR_DiscardDraft] 
+	@RequestID  VARCHAR(30)
+
+AS
+
+UPDATE CHCNPDR_Master
+SET DraftMode = 0
+WHERE RequestID=@RequestID
+
+
+
+GO
