@@ -1,0 +1,2 @@
+CREATE USER [sharonl] WITHOUT LOGIN
+GO

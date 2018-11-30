@@ -33,6 +33,7 @@ BEGIN
 	DECLARE @EmailTo VARCHAR(200)	
 	DECLARE @AttCount INT = 0 
 	DECLARE @MessageID INT = 0
+	DECLARE @YEAR CHAR(4) = DATEPART(YEAR,GETDATE())	
 
 	BEGIN TRY	
 
@@ -134,7 +135,7 @@ BEGIN
 				SET @EmailSubject = ISNULL(@ProvName,'') + ' replied to your message - Auth # ' + @AUTHNO					
 				
 				--Need to get the HTML message string from Daniel
-				SET @EmailMessage = '<head><link href="https://fonts.googleapis.com/css?family=Roboto:500,300,700" rel="stylesheet" type="text/css"></head><html><body style="margin: 0; padding: 0; background: #efefef;"><table style="width: 100%;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 12px 2%;"><table cellpadding=0 cellspacing=0 style="margin: 0 auto; background: #fff; width: 900px;"><tr><td style="padding: 2% 0;"><img src="https://portal.chcnetwork.org/Portals/9/Images/CHCN_LOGO_HORIZONTAL_RGB.png" width="400" style="width: 50%; max-width: 400px"></td><td align="right"><img src="https://portal.chcnetwork.org/Portals/_Default/Skins/Connect/Images/chcn_connect_logo.png" width="300" style="width: 50%; max-width: 300px; float: right"></td></tr></table><table cellpadding=0 cellspacing=0 style="margin: 0 auto; background: #fff; width: 900px;"><tr><td><img src="https://portal.chcnetwork.org/Portals/_Default/Skins/Connect/Images/Banner.png" width="900" style="width: 100%; display: block"></td></tr></table><table style="margin: 0 auto; background: #fff; width: 900px;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 4%;"><div><h1 style="font-family: ''Roboto'', sans-serif; font-weight: 300; font-size: 44px;">New Message Waiting For You</h1><p style="font-family: ''Roboto'', sans-serif; font-weight: 300;">Hi '+ ISNULL(@CHCNUserName,'') +',<br><br>I left you a new message in Auth # '+@AUTHNO+'. Please log in to EZ-CAP to view it.<br><br>'+ISNULL(@ProvName,'')+'</p></div></td></tr></tbody></table><table style="margin: 0 auto; background: #203535; width: 900px;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 4%;"><div><p style="font-family: ''Roboto'', sans-serif; color: #fff; font-size: 14px; font-weight: 300;">Community Health Center Network <br /> 101 Callan Avenue, Suite 300 <br /> San Leandro, CA 94577 <br /> M-F 9:00am to 5:00pm</p><p style="padding: 2% 0; border-top: solid 1px #fff; font-family: ''Roboto'', sans-serif; color: #fff; font-size: 14px; font-weight: 300;">Copyright 2016 by Community Health Center Network</p></div></td></tr></tbody></table></td></tr></tbody></table></body></html>'
+				SET @EmailMessage = '<head><link href="https://fonts.googleapis.com/css?family=Roboto:500,300,700" rel="stylesheet" type="text/css"></head><html><body style="margin: 0; padding: 0; background: #efefef;"><table style="width: 100%;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 12px 2%;"><table cellpadding=0 cellspacing=0 style="margin: 0 auto; background: #fff; width: 900px;"><tr><td style="padding: 2% 0;"><img src="https://connect.chcnetwork.org/Portals/9/Images/CHCN_LOGO_HORIZONTAL_RGB.png" width="400" style="width: 50%; max-width: 400px"></td><td align="right"><img src="https://connect.chcnetwork.org/Portals/_Default/Skins/Connect/Images/chcn_connect_logo.png" width="300" style="width: 50%; max-width: 300px; float: right"></td></tr></table><table cellpadding=0 cellspacing=0 style="margin: 0 auto; background: #fff; width: 900px;"><tr><td><img src="https://connect.chcnetwork.org/Portals/_Default/Skins/Connect/Images/Banner.png" width="900" style="width: 100%; display: block"></td></tr></table><table style="margin: 0 auto; background: #fff; width: 900px;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 4%;"><div><h1 style="font-family: ''Roboto'', sans-serif; font-weight: 300; font-size: 44px;">New Message Waiting For You</h1><p style="font-family: ''Roboto'', sans-serif; font-weight: 300;">Hi '+ ISNULL(@CHCNUserName,'') +',<br><br>I left you a new message in Auth # '+@AUTHNO+'. Please log in to EZ-CAP to view it.<br><br>'+ISNULL(@ProvName,'')+'</p></div></td></tr></tbody></table><table style="margin: 0 auto; background: #203535; width: 900px;" cellspacing="0" cellpadding="0"><tbody><tr><td style="padding: 4%;"><div><p style="font-family: ''Roboto'', sans-serif; color: #fff; font-size: 14px; font-weight: 300;">Community Health Center Network <br /> 101 Callan Avenue, Suite 300 <br /> San Leandro, CA 94577 <br /> M-F 9:00am to 5:00pm</p><p style="padding: 2% 0; border-top: solid 1px #fff; font-family: ''Roboto'', sans-serif; color: #fff; font-size: 14px; font-weight: 300;">Copyright ' + @YEAR + ' by Community Health Center Network</p></div></td></tr></tbody></table></td></tr></tbody></table></body></html>'
 --				SET @EmailMessage = 'New Message Waiting For you 
 		
 --Hi ' + @CHCNUserName + ',
@@ -155,7 +156,6 @@ BEGIN
 	END CATCH	
     
 END
-
 
 
 

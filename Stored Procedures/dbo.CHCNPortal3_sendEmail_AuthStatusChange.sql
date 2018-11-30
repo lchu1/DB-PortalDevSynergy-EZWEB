@@ -77,7 +77,7 @@ BEGIN
 							 AND AUTHNO NOT IN (SELECT AuthNo FROM CHCNAuthReq_EmailNotificationLog WHERE AuthStatus = 'DENIED'))
 				BEGIN 
 					SET @EmailSubject = 'AUTH DENIED'
-					SET @EmailBody = 'Auth NO ' + @AuthNo + ' submitted on ' + @SubmitDate + ' has been denied by CHCN. You can now check the denial reason on CHCN Connect at https://portal.chcnetwork.org.'
+					SET @EmailBody = 'Auth NO ' + @AuthNo + ' submitted on ' + @SubmitDate + ' has been denied by CHCN. You can now check the denial reason on CHCN Connect at https://connect.chcnetwork.org.'
 					--SET @EmailBody = 'Auth NO ' + @AuthNo + ' submitted on ' + @SubmitDate + ' has been denied. Please check the detail note of denial reason in Portal website.'
 					EXEC [MASTER].[DBO].[CHCNEDI_SendEmail] @to=@UserEmail ,@SUBJECT=@EmailSubject, @body=@EmailBody, @body_format='TEXT'
 					
@@ -90,6 +90,5 @@ BEGIN
 
 		END			
 END
-
 
 GO
