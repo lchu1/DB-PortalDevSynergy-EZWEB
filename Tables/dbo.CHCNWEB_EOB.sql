@@ -38,7 +38,9 @@ CREATE TABLE [dbo].[CHCNWEB_EOB]
 [PATID] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [VENDNPI] [varchar] (25) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 [MCALID] [varchar] (40) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
-[Type] [int] NULL
+[Type] [int] NULL,
+[ADJUSTWH] [decimal] (15, 2) NULL,
+[ADJCODEWH] [varchar] (7) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 ) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX [EOB_CHECKNO] ON [dbo].[CHCNWEB_EOB] ([CHECKNO]) ON [PRIMARY]
